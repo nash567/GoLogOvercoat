@@ -78,8 +78,3 @@ func (l Level) SlogLevel() slog.Level {
 		return slog.LevelInfo
 	}
 }
-
-// Enabled returns true if the given level is at or above this level.
-func (l Level) Enabled(lvl Level) bool {
-	return lvl >= l
-}

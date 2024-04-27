@@ -80,39 +80,3 @@ func TestSlogLevel(t *testing.T) {
 		})
 	}
 }
-
-func TestLevel_Enabled(t *testing.T) {
-	type args struct {
-		lvl model.Level
-	}
-	tests := []struct {
-		name string
-		l    model.Level
-		args args
-		want bool
-	}{
-		{
-			name: "Debug logs are enabled",
-			l:    model.DebugLevel,
-			args: args{
-				lvl: model.InfoLevel,
-			},
-			want: true,
-		},
-		{
-			name: "Debug logs are disabled",
-			l:    model.InfoLevel,
-			args: args{
-				lvl: model.DebugLevel,
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Enabled(tt.args.lvl); got != tt.want {
-				t.Errorf("Enabled() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

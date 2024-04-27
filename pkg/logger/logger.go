@@ -52,51 +52,51 @@ func NewSlogLogger(config *model.Config) *SlogLogger {
 }
 
 func (log *SlogLogger) Debug(msg string) {
-	if log.GetLevel().Enabled(model.DebugLevel) {
-		log.entry.Debug(msg)
-	}
+
+	log.entry.Debug(msg)
+
 }
 
 func (log *SlogLogger) Debugf(format string, args ...interface{}) {
-	if log.GetLevel().Enabled(model.DebugLevel) {
-		log.entry.Debug(fmt.Sprintf(format, args...))
-	}
+
+	log.entry.Debug(fmt.Sprintf(format, args...))
+
 }
 
 func (log *SlogLogger) Info(msg string) {
-	if log.GetLevel().Enabled(model.InfoLevel) {
-		log.entry.Info(msg)
-	}
+
+	log.entry.Info(msg)
+
 }
 
 func (log *SlogLogger) Infof(format string, args ...interface{}) {
-	if log.GetLevel().Enabled(model.InfoLevel) {
-		log.entry.Info(fmt.Sprintf(format, args...))
-	}
+
+	log.entry.Info(fmt.Sprintf(format, args...))
+
 }
 
 func (log *SlogLogger) Warn(msg string) {
-	if log.GetLevel().Enabled(model.WarnLevel) {
-		log.entry.Warn(msg)
-	}
+
+	log.entry.Warn(msg)
+
 }
 
 func (log *SlogLogger) Warnf(format string, args ...interface{}) {
-	if log.GetLevel().Enabled(model.WarnLevel) {
-		log.entry.Warn(fmt.Sprintf(format, args...))
-	}
+
+	log.entry.Warn(fmt.Sprintf(format, args...))
+
 }
 
 func (log *SlogLogger) Error(msg string) {
-	if log.GetLevel().Enabled(model.ErrorLevel) {
-		log.entry.Error(msg)
-	}
+
+	log.entry.Error(msg)
+
 }
 
 func (log *SlogLogger) Errorf(format string, args ...interface{}) {
-	if log.GetLevel().Enabled(model.ErrorLevel) {
-		log.entry.Error(fmt.Sprintf(format, args...))
-	}
+
+	log.entry.Error(fmt.Sprintf(format, args...))
+
 }
 
 //nolint:ireturn // implements model.Logger interface

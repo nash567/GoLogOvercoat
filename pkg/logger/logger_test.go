@@ -88,9 +88,9 @@ func TestNewSlogLogger(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tC := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tC.name, func(t *testing.T) {
 			t.Parallel()
-			slog := logger.NewSlogLogger(tt.args.config)
+			slog := logger.NewSlogLogger(tC.args.config)
 			if reflect.TypeOf(slog) != reflect.TypeOf(tC.want) {
 				t.Errorf("wrong logger type: %v", slog)
 			}
