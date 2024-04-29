@@ -12,7 +12,7 @@ import (
 
 func TestFromContext(t *testing.T) {
 	t.Parallel()
-	ctxLog := &logMocks.MockLogger{}
+	ctxLog := logger.NewSlogLogger(&model.Config{})
 	type args struct {
 		ctx context.Context
 	}
@@ -29,8 +29,8 @@ func TestFromContext(t *testing.T) {
 			wantCtxLog: true,
 		},
 	}
-	for _, tt := range tests {
-		tt := tt
+	for _, tC := range tests {
+		tt := tC
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := logger.FromContext(tt.args.ctx)
@@ -64,8 +64,8 @@ func TestNewContextWithLogger(t *testing.T) {
 			want: ctxLog,
 		},
 	}
-	for _, tt := range tests {
-		tt := tt
+	for _, tC := range tests {
+		tt := tC
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			gotCtx := logger.NewContextWithLogger(tt.args.ctx, tt.args.log)

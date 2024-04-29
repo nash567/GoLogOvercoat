@@ -1,7 +1,5 @@
 package model
 
-import "log"
-
 // A Logger provides methods for logging messages.
 type Logger interface {
 	// Debug emits a "DEBUG" level log message.
@@ -40,15 +38,12 @@ type Logger interface {
 
 	// WithError adds a field called "error" to the logger and returns a new Logger.
 	WithError(err error) Logger
-
-	// ToStdLogger makes logger that satisfies std logger interface. All msg are logged at Info level.
-	ToStdLogger() *log.Logger
 }
 
 //go:generate mockery --name=Logger --outpkg mocks
 
 type LevelSetter interface {
-	SetLevel(Level) error
+	SetLevel(Level)
 	GetLevel() Level
 }
 

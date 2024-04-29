@@ -10,11 +10,10 @@ func NewContextWithLogger(ctx context.Context, log model.Logger) context.Context
 	return context.WithValue(ctx, model.ContextKeyLogger, log)
 }
 
-//nolint:ireturn
-func FromContext(ctx context.Context) model.Logger {
-	logger, ok := ctx.Value(model.ContextKeyLogger).(model.Logger)
+func FromContext(ctx context.Context) *SlogLogger {
+	logger, ok := ctx.Value(model.ContextKeyLogger).(*SlogLogger)
 	if !ok || logger == nil {
-		dLog := defaultLogger()
+		dLog := getDefaultLogger()
 		if dLog != nil {
 			dLog.Warn("logger instance not found in context")
 		}

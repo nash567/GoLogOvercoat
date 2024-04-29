@@ -5,6 +5,11 @@ import (
 	"strings"
 )
 
+const (
+	//slog does not have fatal level creating a custom fatal level
+	LevelFatal = slog.Level(13)
+)
+
 // A Level is a level of severity for a log message.
 type Level uint8
 
@@ -28,6 +33,11 @@ const (
 	// severe. It is typically used for errors that should definitely be noted, and
 	// is commonly used for hooks to send errors to an error tracking service.
 	ErrorLevel
+
+	// FatalLevel causes a logger to emit messages logged at "FATAL" level or more
+	// severe. Messages logged at this level cause a logger to log the message and
+	// then call os.Exit(1).
+	FatalLevel
 )
 
 // String implements fmt.Stringer for Level.
@@ -41,6 +51,8 @@ func (l Level) String() string {
 		return "INFO"
 	case DebugLevel:
 		return "DEBUG"
+	case FatalLevel:
+		return "FATAL"
 	default:
 		return "INFO"
 	}
@@ -59,6 +71,8 @@ func ParseLevel(logLevel string) Level {
 		return WarnLevel
 	case "error":
 		return ErrorLevel
+	case "fatal":
+		return FatalLevel
 	default:
 		return InfoLevel
 	}
@@ -74,6 +88,8 @@ func (l Level) SlogLevel() slog.Level {
 		return slog.LevelDebug
 	case ErrorLevel:
 		return slog.LevelError
+	case FatalLevel:
+		return LevelFatal
 	default:
 		return slog.LevelInfo
 	}

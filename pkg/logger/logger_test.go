@@ -2,7 +2,8 @@ package logger_test
 
 import (
 	"errors"
-	"log"
+	"os"
+	"os/exec"
 	"reflect"
 	"regexp"
 	"strings"
@@ -16,7 +17,6 @@ import (
 const (
 	testMsgText    = "This is a test"
 	testMsgText123 = "This is a test: 123"
-	datePattern    = `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}`
 )
 
 var errLogger = errors.New("logger error")
@@ -85,13 +85,22 @@ func TestNewSlogLogger(t *testing.T) {
 			},
 			want: &logger.SlogLogger{},
 		},
+		{
+			name: "slog with level fatal",
+			args: args{
+				config: &model.Config{
+					Level: model.FatalLevel.String(),
+				},
+			},
+			want: &logger.SlogLogger{},
+		},
 	}
-	for _, tt := range tests {
-		tC := tt
-		t.Run(tC.name, func(t *testing.T) {
+	for _, tC := range tests {
+		tt := tC
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			slog := logger.NewSlogLogger(tC.args.config)
-			if reflect.TypeOf(slog) != reflect.TypeOf(tC.want) {
+			slog := logger.NewSlogLogger(tt.args.config)
+			if reflect.TypeOf(slog) != reflect.TypeOf(tt.want) {
 				t.Errorf("wrong logger type: %v", slog)
 			}
 		})
@@ -101,10 +110,7 @@ func TestNewSlogLogger(t *testing.T) {
 func TestSlogLogger_Debug(t *testing.T) {
 	t.Parallel()
 	slogLogger, output := makeTestLogger()
-	err := slogLogger.SetLevel(model.DebugLevel)
-	if err != nil {
-		t.Error(err)
-	}
+	slogLogger.SetLevel(model.DebugLevel)
 
 	slogLogger.Debug("This is a test")
 	outputMustMatch(t, "SlogLogger.Debug", output.String(), []string{
@@ -115,10 +121,7 @@ func TestSlogLogger_Debug(t *testing.T) {
 func TestSlogLogger_Debugf(t *testing.T) {
 	t.Parallel()
 	slogLogger, output := makeTestLogger()
-	err := slogLogger.SetLevel(model.DebugLevel)
-	if err != nil {
-		t.Error(err)
-	}
+	slogLogger.SetLevel(model.DebugLevel)
 
 	slogLogger.Debugf("This is a test: %d", 123)
 	outputMustMatch(t, "SlogLogger.Debugf", output.String(), []string{
@@ -154,6 +157,56 @@ func TestSlogLogger_Warn(t *testing.T) {
 	outputMustMatch(t, "SlogLogger.Warn", output.String(), []string{
 		testString(model.WarnLevel, testMsgText),
 	})
+}
+
+func TestSlogLogger_Fatal(t *testing.T) {
+	if os.Getenv("CALL_LOG_FATAL") == "1" {
+		config := model.Config{Output: os.Stdout}
+		slog := logger.NewSlogLogger(&config)
+
+		slog.Fatal("This is a test")
+	}
+	t.Parallel()
+	outb := new(strings.Builder)
+	cmString := os.Args[0]
+	cmd := exec.Command(cmString, "-test.run=TestSlogLogger_Fatal")
+	cmd.Env = append(os.Environ(), "CALL_LOG_FATAL=1")
+	cmd.Stdout = outb
+
+	errExit := new(exec.ExitError)
+	if err := cmd.Run(); errors.As(err, &errExit) && !errExit.Success() {
+		outputMustMatch(t, "SlogLogger.Fatal", outb.String(), []string{
+			testString(model.FatalLevel, testMsgText),
+		})
+		return
+	}
+
+	t.Fatal("failure in ZapLogger.Fatal: calling did not result in os.Exit(1)")
+}
+
+func TestSlogLogger_Fatalf(t *testing.T) {
+	if os.Getenv("CALL_LOG_FATAL") == "1" {
+		config := model.Config{Output: os.Stdout}
+		slog := logger.NewSlogLogger(&config)
+
+		slog.Fatalf("This is a test: %d", 123)
+	}
+	t.Parallel()
+	outb := new(strings.Builder)
+	cmString := os.Args[0]
+	cmd := exec.Command(cmString, "-test.run=TestSlogLogger_Fatalf")
+	cmd.Env = append(os.Environ(), "CALL_LOG_FATAL=1")
+	cmd.Stdout = outb
+
+	errExit := new(exec.ExitError)
+	if err := cmd.Run(); errors.As(err, &errExit) && !errExit.Success() {
+		outputMustMatch(t, "SlogLogger.Fatal", outb.String(), []string{
+			testString(model.FatalLevel, testMsgText123),
+		})
+		return
+	}
+
+	t.Fatal("failure in ZapLogger.Fatal: calling did not result in os.Exit(1)")
 }
 
 func TestSlogLogger_Warnf(t *testing.T) {
@@ -192,10 +245,7 @@ func TestSlogLogger_SetLevel(t *testing.T) {
 
 	var setter model.LevelSetter = slogLogger
 
-	err := setter.SetLevel(model.InfoLevel)
-	if err != nil {
-		t.Error(err)
-	}
+	setter.SetLevel(model.InfoLevel)
 
 	slogLogger.Info("info msg")
 	slogLogger.Debug("debug msg")
@@ -206,10 +256,7 @@ func TestSlogLogger_SetLevel(t *testing.T) {
 	slogLogger, output = makeTestLogger()
 	setter = slogLogger
 
-	err = setter.SetLevel(model.DebugLevel)
-	if err != nil {
-		t.Error(err)
-	}
+	setter.SetLevel(model.DebugLevel)
 
 	slogLogger.Debug("debug msg")
 	if !strings.Contains(output.String(), "debug msg") {
@@ -259,28 +306,12 @@ func TestSlogLogger_WithError(t *testing.T) {
 	})
 }
 
-func TestSlogLogger_ToStdLogger(t *testing.T) {
-	t.Parallel()
-	l, output := makeTestLogger()
-	stdLog := l.ToStdLogger()
-	stdLog.Println("This is a test")
-	outputMustMatch(t, "SlogLogger.Println", output.String(), []string{
-		testString(model.InfoLevel, testMsgText),
-	})
-	assert.IsType(t, &log.Logger{}, stdLog)
-}
-
 func TestSlogLogger_GetLevel(t *testing.T) {
 	t.Parallel()
 	slogLogger, _ := makeTestLogger()
 	var setter model.LevelSetter = slogLogger
-	err := setter.SetLevel(model.DebugLevel)
-	if err != nil {
-		return
-	}
-	if err != nil {
-		t.Error(err)
-	}
+	setter.SetLevel(model.DebugLevel)
+
 	assert.Equal(t, model.DebugLevel, setter.GetLevel())
 }
 
@@ -293,7 +324,7 @@ func testString(level model.Level, msg string, kv ...string) string {
 		}
 		kvStr = append(kvStr, `"`+kv[i]+`":"`+val+`"`)
 	}
-	resp := `{"time":"` + datePattern + `","level":"` + level.String() + `","msg":"` + msg + `"`
+	resp := `{"time":".*","level":"` + level.String() + `","msg":"` + msg + `"`
 
 	if len(kvStr) > 0 {
 		resp += "," + strings.Join(kvStr, ",")

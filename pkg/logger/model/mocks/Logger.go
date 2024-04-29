@@ -3,8 +3,6 @@
 package mocks
 
 import (
-	log "log"
-
 	model "github.com/goLogOverCoat/pkg/logger/model"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -51,26 +49,6 @@ func (_m *Logger) Infof(format string, args ...interface{}) {
 	_ca = append(_ca, format)
 	_ca = append(_ca, args...)
 	_m.Called(_ca...)
-}
-
-// ToStdLogger provides a mock function with given fields:
-func (_m *Logger) ToStdLogger() *log.Logger {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for ToStdLogger")
-	}
-
-	var r0 *log.Logger
-	if rf, ok := ret.Get(0).(func() *log.Logger); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*log.Logger)
-		}
-	}
-
-	return r0
 }
 
 // Warn provides a mock function with given fields: msg
